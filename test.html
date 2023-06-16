@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <p>is connected : <span id="isConnected">N/A</span></p>
+    <p>socket id: <span id="socketId" >N/A</span></p>
+    <p>Current room: <span id="currentRoom" >N/A</span></p>
+
+    <p>Is joined room: <span id="isRoomJoined" >N/A</span></p>
+
+    <p>List of users in room: <span id="listOfUsersInRoom" >N/A</span></p>
+    <div>
+        <input type="text" id="createRoomName" placeholder="Room name">
+        <button id="createRoom">Create room</button>
+    </div>
+
+    <div>
+        <input type="text" id="joinRoomName" placeholder="Room name">
+        <button id="joinRoom">Join room</button>
+    </div>
+    
+    <div>
+        <input type="text" id="message" placeholder="Message">
+        <button id="sendMessage">Send message</button>
+    </div>
+</body>
+<script>
+    const socket = io('http://localhost:3000');
+    let roomName = '';
+    socket.on('connect', () => {
+        document.getElementById('isConnected').innerHTML = 'true';
+        document.getElementById('socketId').innerHTML = socket.id;
+    });
+    socket.on('disconnect', () => {
+        document.getElementById('isConnected').innerHTML = 'false';
+    });
+    socket.on('isRoomCreated', (room) => {
+        document.getElementById('currentRoom').innerHTML = room;
+    });
+    socket.on('isRoomJoined', (room) => {
+        document.getElementById('isRoomJoined').innerHTML = room;
+    });
+
+    
+
+    const createRoom = document.getElementById('createRoom');
+    createRoom.addEventListener('click', () => {
+        const rn = document.getElementById('createRoomName').value;
+        socket.emit('createRoom', rn);
+    });
+
+    const joinRoom = document.getElementById('joinRoom');
+    joinRoom.addEventListener('click', () => {
+        let rn = document.getElementById('joinRoomName').value;
+        socket.emit('joinRoom', roomName);
+        roomName = rn;
+    });
+    //Send message to room
+    const sendMessage = document.getElementById('sendMessage');
+    sendMessage.addEventListener('click', () => {
+        const message = document.getElementById('message').value;
+        socket.emit('sendMessage', {roomName, message});
+    });
+
+    //receiveMsg
+    socket.on('receiveMessage', (data) => {
+        console.log(data);
+    });
+</script>
+</html>
